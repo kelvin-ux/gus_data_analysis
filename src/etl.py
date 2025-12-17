@@ -188,32 +188,38 @@ class ETLPipeline:
         return kod[:2] + "00000"
 
     def _map_variable_to_cost_type(self, variable_name: str) -> Optional[Tuple[str, str]]:
-        for key, value in self.COST_TYPE_MAPPING.items():
-            if key in variable_name.lower() or variable_name.lower() in key:
-                return value
+        # Normalizacja - usuwamy polskie znaki
+        def normalize(s):
+            replacements = {
+                'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n',
+                'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z',
+                'Ą': 'A', 'Ć': 'C', 'Ę': 'E', 'Ł': 'L', 'Ń': 'N',
+                'Ó': 'O', 'Ś': 'S', 'Ź': 'Z', 'Ż': 'Z'
+            }
+            for pl, ascii in replacements.items():
+                s = s.replace(pl, ascii)
+            return s.lower()
 
-        name_lower = variable_name.lower()
-        if "ogółem" in name_lower and "c.o" in name_lower:
-            return ("OGOLEM_Z_CO_CW", "OGOLEM")
-        elif "ogółem" in name_lower:
-            return ("OGOLEM_BEZ_CO_CW", "OGOLEM")
-        elif "eksploatacj" in name_lower and "zarząd" in name_lower:
-            return ("EKSPLOATACJA_ZARZAD", "EKSPLOATACJA")
-        elif "eksploatacj" in name_lower and "konserw" in name_lower:
-            return ("EKSPLOATACJA_KONSERWACJA", "EKSPLOATACJA")
-        elif "eksploatacj" in name_lower:
-            return ("EKSPLOATACJA_RAZEM", "EKSPLOATACJA")
-        elif "ogrzew" in name_lower or "ciepł" in name_lower:
-            return ("USLUGI_CO_CW", "USLUGI")
-        elif "wod" in name_lower or "ściek" in name_lower:
-            return ("USLUGI_WODA", "USLUGI")
-        elif "odpad" in name_lower:
-            return ("USLUGI_ODPADY", "USLUGI")
-        elif "wind" in name_lower:
-            return ("USLUGI_WINDY", "USLUGI")
-        elif "usług" in name_lower:
-            return ("USLUGI_RAZEM", "USLUGI")
+        name_norm = normalize(variable_name)
 
+        # Bezposrednie dopasowanie slow kluczowych
+        if "gminne" in name_norm or "komunalne" in name_norm:
+            return ("ZASOBY_GMINNE", "PUBLICZNE")
+        if "skarbu panstwa" in name_norm or "skarb panstwa" in name_norm:
+            return ("ZASOBY_SKARBU_PANSTWA", "PUBLICZNE")
+        if "spoldzielni" in name_norm or "spoldzielcz" in name_norm:
+            return ("ZASOBY_SPOLDZIELNI", "SPOLDZIELCZE")
+        if "tbs" in name_norm or "budownictwa spolecznego" in name_norm:
+            return ("ZASOBY_TBS", "SPOLECZNE")
+        if "wspolnot" in name_norm:
+            return ("ZASOBY_WSPOLNOTY", "PRYWATNE")
+        if "innych podmiotow" in name_norm or "inne podmioty" in name_norm:
+            return ("ZASOBY_INNE", "PRYWATNE")
+        if "zakladow pracy" in name_norm or "zaklady pracy" in name_norm:
+            return ("ZASOBY_ZAKLADY_PRACY", "PRYWATNE")
+
+        # Debug - pokaz niezmapowane
+        print(f"  [WARN] Niezmapowana zmienna: {variable_name}")
         return None
 
     def _load_dimensions(self, records: List[Dict]):

@@ -1,2 +1,4 @@
 /output
 ./debug_api.py
+/.idea
+.env

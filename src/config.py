@@ -14,7 +14,7 @@ class DatabaseConfig:
     user: str = os.getenv("DB_USER", "postgres")
     password: str = os.getenv("DB_PASSWORD", "")
     schema: str = os.getenv("DB_SCHEMA", "gus")
-    
+
     @property
     def connection_string(self) -> str:
         return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
@@ -28,7 +28,7 @@ class GUSApiConfig:
     retry_count: int = 3
     retry_delay: float = 1.0
     page_size: int = 100
-    
+
     subject_id: str = "K11"
     group_id: str = "G621"
     subgroup_id: str = "P3961"
@@ -41,16 +41,16 @@ class PathsConfig:
     data_dir: Path = None
     logs_dir: Path = None
     output_dir: Path = None
-    
+
     def __post_init__(self):
         self.sql_dir = self.base_dir / "sql"
         self.data_dir = self.base_dir / "data"
         self.logs_dir = self.base_dir / "logs"
         self.output_dir = self.base_dir / "output"
-        
+
         for dir_path in [self.data_dir, self.logs_dir, self.output_dir]:
             dir_path.mkdir(parents=True, exist_ok=True)
-    
+
     @property
     def schema_file(self) -> Path:
         return self.sql_dir / "01_schema.sql"
@@ -65,17 +65,37 @@ class ValidationConfig:
 
 
 @dataclass
+class EmailConfig:
+    smtp_host: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    smtp_port: int = int(os.getenv("SMTP_PORT", "587"))
+    smtp_user: str = os.getenv("SMTP_USER", "")
+    smtp_password: str = os.getenv("SMTP_PASSWORD", "")
+    sender_email: str = os.getenv("SENDER_EMAIL", "")
+    recipients_str: str = os.getenv("EMAIL_RECIPIENTS", "")
+
+    @property
+    def recipients(self):
+        return [r.strip() for r in self.recipients_str.split(",") if r.strip()]
+
+    @property
+    def is_configured(self) -> bool:
+        return bool(self.smtp_user and self.smtp_password and self.recipients)
+
+
+@dataclass
 class Config:
     db: DatabaseConfig = None
     api: GUSApiConfig = None
     paths: PathsConfig = None
     validation: ValidationConfig = None
-    
+    email: EmailConfig = None
+
     def __post_init__(self):
         self.db = DatabaseConfig()
         self.api = GUSApiConfig()
         self.paths = PathsConfig()
         self.validation = ValidationConfig()
+        self.email = EmailConfig()
 
 
 config = Config()

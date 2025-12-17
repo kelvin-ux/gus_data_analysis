@@ -37,16 +37,3 @@ print("Generowanie HTML...")
 html_gen = HTMLReportGenerator()
 html_path = html_gen.generate(analyses, stats)
 print(f"  HTML: {html_path}")
-
-print("\n=== Wyniki analizy ===\n")
-for a in analyses:
-    print(f"## {a.name}")
-    print(f"   {a.description}")
-    if a.insights:
-        for insight in a.insights:
-            print(f"   • {insight}")
-    if a.chart_static:
-        print(f"   📊 Wykres: {a.chart_static}")
-    print()
-
-print("✓ Gotowe!")

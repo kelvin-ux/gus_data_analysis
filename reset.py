@@ -27,7 +27,7 @@ print("   Schema utworzony")
 
 print("\n3. Uruchamianie ETL...")
 pipeline = ETLPipeline(db)
-result = pipeline.run(years=[2022, 2024], unit_level=2)
+result = pipeline.run(years=[2018,2020, 2022, 2024], unit_level=2)
 
 print(f"\n=== Wynik ETL ===")
 print(f"Status: {'SUCCESS' if result.success else 'FAILED'}")
