@@ -16,13 +16,13 @@ class EmailConfig:
     smtp_host: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
     smtp_port: int = int(os.getenv("SMTP_PORT", "587"))
     smtp_user: str = os.getenv("SMTP_USER", "test")
-    smtp_password: str = os.getenv("SMTP_PASSWORD", "zadgyr-zerrat-xerwI8")
-    sender_email: str = os.getenv("SENDER_EMAIL", "pokertexasholdem54@gmail.com")
+    smtp_password: str = os.getenv("SMTP_PASSWORD", "")
+    sender_email: str = os.getenv("SENDER_EMAIL", "")
     recipients: List[str] = None
 
     def __post_init__(self):
         if self.recipients is None:
-            recipients_str = os.getenv("EMAIL_RECIPIENTS", "jedrzejmalaczynski@gmail.com")
+            recipients_str = os.getenv("EMAIL_RECIPIENTS", "")
             self.recipients = [r.strip() for r in recipients_str.split(",") if r.strip()]
 
 
